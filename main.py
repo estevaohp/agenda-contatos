@@ -1,10 +1,32 @@
+import json
+
 print("=" * 30) 
 print("AGENDA DE CONTATOS")
 print("=" * 30)
 
 opcao = ""
 
-contatos = []
+def carregar_contatos():
+    try:
+        with open("contatos.json", "r") as arquivo:
+            return json.load(arquivo)
+    except FileNotFoundError:
+        print("Arquivo de contatos não encontrado. Criando uma nova agenda.")
+        return []
+
+    except json.JSONDecodeError:
+        print("O arquivo de contatos está inválido. Iniciando uma nova agenda.")
+        return[]
+
+contatos = carregar_contatos()
+
+def salvar_contatos():
+    try:
+        with open("contatos.json", "w") as arquivo:
+            json.dump(contatos, arquivo, indent=4)
+    except TypeError:
+        print("Contato não salvo. Tente novamente")
+        
 
 def listar_contatos():
     if not contatos:
@@ -37,6 +59,7 @@ def buscar_contatos(nome_busca):
 
 def excluir_contato(indice):
     del contatos[indice]
+    salvar_contatos()
     print("Contato excluido com sucesso!")
 
 def cadastrar_contato():
@@ -51,6 +74,7 @@ def cadastrar_contato():
     }
 
     contatos.append(contato)
+    salvar_contatos()
 
     print("Contato cadastrado com sucesso!")
 
@@ -105,6 +129,7 @@ def editar_contato():
                     print("Opção inválida!")
 
                 if alterado:
+                    salvar_contatos()
                     print("Contato alterado com sucesso!")
 
 def escolher_contato():
@@ -166,7 +191,18 @@ while opcao != "0":
         indice = escolher_contato()
 
         if indice is not None:
+            confirmacao = input(
+                f"Tem certeza que deseja excluir{contatos[indice]['nome']}? (s/n)"
+            )
+
+        if confirmacao.lower() == "s":
             excluir_contato(indice)
+
+        elif confirmacao.lower() == "n":
+            print("Exclusão cancelada.")
+
+        else:
+            print("Opção invalida.")
 
     elif opcao == "0":
         print("Saindo!")
